@@ -2,7 +2,6 @@
 package aiss.gitminer.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import javax.persistence.*;
 import javax.validation.constraints.NotEmpty;
 import java.util.ArrayList;
@@ -34,9 +33,16 @@ public class Project {
     @JoinColumn(name = "projectId")
     private List<Issue> issues;
 
-    public Project(String id, String name, String webUrl) {
-        commits = new ArrayList<>();
-        issues = new ArrayList<>();
+    public Project() {
+    }
+
+    public Project(String name, String webUrl, List<Commit> commits, List<Issue> issues) {
+        this.name = name;
+        this.webUrl = webUrl;
+        this.commits = commits;
+        this.issues = issues;
+        //this.commits = new ArrayList<>();
+        //this.issues = new ArrayList<>();
     }
 
     public String getId() {

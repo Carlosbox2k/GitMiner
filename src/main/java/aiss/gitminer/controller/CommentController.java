@@ -6,7 +6,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import aiss.gitminer.model.Comment;
-
 import javax.validation.Valid;
 import java.util.List;
 import java.util.Optional;
@@ -40,7 +39,8 @@ public class CommentController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public Comment create(@RequestBody @Valid Comment comment) {
-        Comment _comment = commentRepository.save(new Comment(comment.getBody(), comment.getAuthor(), comment.getCreatedAt(), comment.getUpdatedAt()));
+        Comment _comment = commentRepository.save(new Comment(comment.getBody(), comment.getAuthor(),
+                comment.getCreatedAt(), comment.getUpdatedAt()));
         return _comment;
     }
 
@@ -49,14 +49,18 @@ public class CommentController {
     public void update(@RequestBody @Valid Comment updatedComment, @PathVariable String comment_id) throws CommentNotFoundException {
         Optional<Comment> commentData = commentRepository.findById(comment_id);
 
+        Comment _comment;
+
         if (commentData.isPresent()) {
-            Comment _comment = commentData.get();
+            _comment = commentData.get();
             _comment.setBody(updatedComment.getBody());
             _comment.setAuthor(updatedComment.getAuthor());
             _comment.setCreatedAt(updatedComment.getCreatedAt());
             _comment.setUpdatedAt(updatedComment.getUpdatedAt());
         } else
             throw new CommentNotFoundException();
+
+        commentRepository.save(_comment);
     }
 
     @DeleteMapping("/{comment_id}")

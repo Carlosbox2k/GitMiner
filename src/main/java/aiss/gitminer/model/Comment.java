@@ -1,16 +1,13 @@
 
 package aiss.gitminer.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import javax.annotation.Generated;
 import javax.persistence.*;
 import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
 
 @Entity
 @Table(name = "Comment")
-public class    Comment {
+public class Comment {
 
     @Id
     @JsonProperty("id")
@@ -28,6 +25,16 @@ public class    Comment {
     private String createdAt;
     @JsonProperty("updated_at")
     private String updatedAt;
+
+    public Comment() {
+    }
+
+    public Comment(String body, User author, String createdAt, String updatedAt) {
+        this.body = body;
+        this.author = author;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
+    }
 
     public String getId() {
         return id;

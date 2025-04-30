@@ -6,7 +6,6 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
 
 @Entity
 @Table(name = "Commit")
@@ -17,7 +16,6 @@ public class Commit {
     private String id;
     @JsonProperty("title")
     private String title;
-
     @JsonProperty("message")
     @Column(columnDefinition="TEXT")
     private String message;
@@ -32,6 +30,19 @@ public class Commit {
     @JsonProperty("web_url")
     @NotEmpty(message = "URL cannot be empty.")
     private String webUrl;
+
+    public Commit() {
+    }
+
+    public Commit(String title, String message, String authorName, String authorEmail, String authoredDate, String webUrl) {
+        this.title = title;
+        this.message = message;
+        this.authorName = authorName;
+        this.authorEmail = authorEmail;
+        this.authoredDate = authoredDate;
+        this.webUrl = webUrl;
+    }
+
     /*
     @JsonProperty("committer_name")
     @NotEmpty(message = "Committer name cannot be empty.")
