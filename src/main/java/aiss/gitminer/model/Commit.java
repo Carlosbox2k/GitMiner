@@ -34,7 +34,8 @@ public class Commit {
     public Commit() {
     }
 
-    public Commit(String title, String message, String authorName, String authorEmail, String authoredDate, String webUrl) {
+    public Commit(String id, String title, String message, String authorName, String authorEmail, String authoredDate, String webUrl) {
+        this.id = id;
         this.title = title;
         this.message = message;
         this.authorName = authorName;

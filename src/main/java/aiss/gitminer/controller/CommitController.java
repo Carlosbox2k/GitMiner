@@ -40,7 +40,7 @@ public class CommitController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public Commit create(@RequestBody @Valid Commit commit) {
-        Commit _commit = commitRepository.save(new Commit(commit.getTitle(), commit.getMessage(),
+        Commit _commit = commitRepository.save(new Commit(commit.getId(), commit.getTitle(), commit.getMessage(),
                 commit.getAuthorName(), commit.getAuthorEmail(), commit.getAuthoredDate(), commit.getWebUrl()));
         return _commit;
     }
@@ -49,9 +49,8 @@ public class CommitController {
     @PutMapping("/{commit_id}")
     public void update(@PathVariable String id, @RequestBody Commit updatedCommit) {
         Optional<Commit>  commitData = commitRepository.findById(id);
+        Commit _commit = commitData.get();
 
-        Commit _commit;
-        
         if (commitData.isPresent()) {
             _commit = commitData.get();
             _commit.setTitle(updatedCommit.getTitle());

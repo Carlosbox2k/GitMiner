@@ -19,7 +19,6 @@ public class IssueController {
     @Autowired
     IssueRepository issueRepository;
 
-
     @GetMapping
     public List<Issue> getIssues(@RequestParam(required = false) String state) {    // TODO Add Pageable, lab 8
         if (state != null) {
@@ -47,7 +46,7 @@ public class IssueController {
     @ResponseStatus(HttpStatus.CREATED)
     public Issue createIssue(@Valid @RequestBody Issue issue){
         Issue _issue = issueRepository
-                .save(new Issue(issue.getTitle(), issue.getDescription(), issue.getState(), issue.getCreatedAt(),
+                .save(new Issue(issue.getId(), issue.getTitle(), issue.getDescription(), issue.getState(), issue.getCreatedAt(),
                         issue.getUpdatedAt(), issue.getClosedAt(), issue.getLabels(), issue.getAuthor(), issue.getAssignee(),
                         issue.getVotes(), issue.getComments()
                 ));
@@ -56,23 +55,26 @@ public class IssueController {
 
     @PutMapping("/{issueId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void updateIssue(@PathVariable("issueId") String issueId, @Valid @RequestBody Issue issue){
+    public void updateIssue(@PathVariable("issueId") String issueId, @Valid @RequestBody Issue updatedIssue){
         Optional<Issue> _issue = issueRepository.findById(issueId);
+        Issue __issue = _issue.get();
+
         if (_issue.isPresent()) {
-            Issue __issue = _issue.get();
-            __issue.setTitle(issue.getTitle());
-            __issue.setDescription(issue.getDescription());
-            __issue.setState(issue.getState());
-            __issue.setCreatedAt(issue.getCreatedAt());
-            __issue.setUpdatedAt(issue.getUpdatedAt());
-            __issue.setClosedAt(issue.getClosedAt());
-            __issue.setLabels(issue.getLabels());
-            __issue.setAuthor(issue.getAuthor());
-            __issue.setAssignee(issue.getAssignee());
-            __issue.setVotes(issue.getVotes());
-            __issue.setComments(issue.getComments());
+            __issue.setTitle(updatedIssue.getTitle());
+            __issue.setDescription(updatedIssue.getDescription());
+            __issue.setState(updatedIssue.getState());
+            __issue.setCreatedAt(updatedIssue.getCreatedAt());
+            __issue.setUpdatedAt(updatedIssue.getUpdatedAt());
+            __issue.setClosedAt(updatedIssue.getClosedAt());
+            __issue.setLabels(updatedIssue.getLabels());
+            __issue.setAuthor(updatedIssue.getAuthor());
+            __issue.setAssignee(updatedIssue.getAssignee());
+            __issue.setVotes(updatedIssue.getVotes());
+            __issue.setComments(updatedIssue.getComments());
+        } else {
+            throw new IssueNotFoundException();
         }
-        throw new IssueNotFoundException();
+        issueRepository.save(__issue);
     }
 
     @DeleteMapping("/{issueId}")

@@ -29,7 +29,7 @@ public class Issue {
     @ElementCollection
     private List<String> labels;
     @JsonProperty("author")
-    @NotEmpty(message = "The author of the issue cannot be empty")
+  //  @NotEmpty(message = "The author of the issue cannot be empty")
     @JoinColumn(name = "author_id",referencedColumnName = "id")
     @OneToOne(cascade=CascadeType.ALL)
     private User author;
@@ -47,9 +47,10 @@ public class Issue {
     public Issue() {
     }
 
-    public Issue(String title, String description, String state, String createdAt,
+    public Issue(String id, String title, String description, String state, String createdAt,
                  String updatedAt, String closedAt, List<String> labels, User author,
                  User assignee, Integer votes, List<Comment> comments) {
+        this.id = id;
         this.title = title;
         this.description = description;
         this.state = state;
@@ -60,6 +61,7 @@ public class Issue {
         this.author = author;
         this.assignee = assignee;
         this.votes = votes;
+        // this.comments = new ArrayList<>();
         this.comments = comments;
     }
 

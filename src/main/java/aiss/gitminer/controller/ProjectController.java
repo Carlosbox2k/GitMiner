@@ -58,24 +58,25 @@ public class ProjectController {
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
     public Project create(@Valid @RequestBody Project project) {
-        Project savedProject = projectRepository.save(new Project(project.getName(),project.getWebUrl(),project.getCommits(),project.getIssues()));
+        Project savedProject = projectRepository.save(new Project(project.getId(), project.getName(),project.getWebUrl(), project.getCommits(), project.getIssues()));
         for (Commit commit : project.getCommits()) {
-            commitRepository.save(new Commit(commit.getTitle(), commit.getMessage(), commit.getAuthorName(), commit.getAuthorEmail(), commit.getAuthoredDate(), commit.getWebUrl()));
+            commitRepository.save(new Commit(commit.getId(), commit.getTitle(), commit.getMessage(), commit.getAuthorName(), commit.getAuthorEmail(), commit.getAuthoredDate(), commit.getWebUrl()));
         }
         for (Issue issue : project.getIssues()) {
-            issueRepository.save(new Issue(issue.getTitle(), issue.getDescription(), issue.getState(), issue.getCreatedAt(), issue.getUpdatedAt(), issue.getClosedAt(), issue.getLabels(), issue.getAuthor(), issue.getAssignee(), issue.getVotes(), issue.getComments()));
+            issueRepository.save(new Issue(issue.getId(),issue.getTitle(), issue.getDescription(), issue.getState(), issue.getCreatedAt(), issue.getUpdatedAt(), issue.getClosedAt(), issue.getLabels(), issue.getAuthor(), issue.getAssignee(), issue.getVotes(), issue.getComments()));
             User author = issue.getAuthor();
-            userRepository.save(new User(author.getUsername(), author.getName(), author.getAvatarUrl(), author.getWebUrl()));
+            userRepository.save(new User(author.getId(), author.getUsername(), author.getName(), author.getAvatarUrl(), author.getWebUrl()));
             User assignee = issue.getAssignee();
             if (assignee != null) {
-                userRepository.save(new User(assignee.getUsername(), assignee.getName(), assignee.getAvatarUrl(), assignee.getWebUrl()));
+                userRepository.save(new User(assignee.getId() ,assignee.getUsername(), assignee.getName(), assignee.getAvatarUrl(), assignee.getWebUrl()));
             }
             for (Comment comment : issue.getComments()) {
-                commentRepository.save(new Comment(comment.getBody(), comment.getAuthor(), comment.getCreatedAt(), comment.getUpdatedAt()));
+                commentRepository.save(new Comment(comment.getId(),comment.getBody(), comment.getAuthor(), comment.getCreatedAt(), comment.getUpdatedAt()));
                 User user = comment.getAuthor();
-                userRepository.save(new User(user.getUsername(), user.getName(), user.getAvatarUrl(), user.getWebUrl()));
+                userRepository.save(new User(user.getId(), user.getUsername(), user.getName(), user.getAvatarUrl(), user.getWebUrl()));
             }
         }
+
         return savedProject;
     }
 

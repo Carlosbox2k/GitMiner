@@ -39,7 +39,7 @@ public class CommentController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public Comment create(@RequestBody @Valid Comment comment) {
-        Comment _comment = commentRepository.save(new Comment(comment.getBody(), comment.getAuthor(),
+        Comment _comment = commentRepository.save(new Comment(comment.getId(), comment.getBody(), comment.getAuthor(),
                 comment.getCreatedAt(), comment.getUpdatedAt()));
         return _comment;
     }
