@@ -29,7 +29,7 @@ public class Issue {
     @ElementCollection
     private List<String> labels;
     @JsonProperty("author")
-  //  @NotEmpty(message = "The author of the issue cannot be empty")
+    // @NotEmpty(message = "The author of the issue cannot be empty")
     @JoinColumn(name = "author_id",referencedColumnName = "id")
     @OneToOne(cascade=CascadeType.ALL)
     private User author;

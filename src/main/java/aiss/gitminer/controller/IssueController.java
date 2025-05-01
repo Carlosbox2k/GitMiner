@@ -20,10 +20,13 @@ public class IssueController {
     IssueRepository issueRepository;
 
     @GetMapping
-    public List<Issue> getIssues(@RequestParam(required = false) String state) {    // TODO Add Pageable, lab 8
-        if (state != null) {
+    public List<Issue> getIssues(@RequestParam(required = false) String state, @RequestParam(required = false) String authorId) {    // TODO Add Pageable, lab 8
+        if (state != null && authorId != null)
+            return issueRepository.findAll().stream().filter(issue -> issue.getState().equals(state) && issue.getAuthor().getId().equals(authorId)).collect(Collectors.toList());
+        else if (state != null)
             return issueRepository.findAll().stream().filter(issue -> issue.getState().equals(state)).collect(Collectors.toList());
-        }
+        else if (authorId != null)
+            return issueRepository.findAll().stream().filter(issue -> issue.getAuthor().getId().equals(authorId)).collect(Collectors.toList());
         return issueRepository.findAll();
     }
 
@@ -35,6 +38,7 @@ public class IssueController {
         }
         return null;
     }
+
 
     @GetMapping("/{issueId}/comments")
     public List<Comment> getIssueComments(@PathVariable("issueId") String issueId) {
