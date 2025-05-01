@@ -1,8 +1,8 @@
 package aiss.gitminer.controller;
 
 import aiss.gitminer.exception.ProjectNotFoundException;
-import aiss.gitminer.model.Project;
-import aiss.gitminer.repository.ProjectRepository;
+import aiss.gitminer.model.*;
+import aiss.gitminer.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.HttpStatus;
@@ -15,10 +15,18 @@ import java.util.Optional;
 public class ProjectController {
 
     private ProjectRepository projectRepository;
+    private CommitRepository commitRepository;
+    private IssueRepository issueRepository;
+    private CommentRepository commentRepository;
+    private UserRepository userRepository;
 
     @Autowired
-    public ProjectController(ProjectRepository projectRepository){
+    public ProjectController(ProjectRepository projectRepository, CommitRepository commitRepository, IssueRepository issueRepository, CommentRepository commentRepository, UserRepository userRepository) {
         this.projectRepository=projectRepository;
+        this.commitRepository = commitRepository;
+        this.issueRepository = issueRepository;
+        this.commentRepository = commentRepository;
+        this.userRepository = userRepository;
     }
 
     @GetMapping
@@ -35,12 +43,39 @@ public class ProjectController {
         return project.get();
     }
 
+    @GetMapping("/{id}/commits")
+    public List<Commit> findAllCommits(@PathVariable String id)  {
+        Project project = findOne(id);
+        return project.getCommits();
+    }
+
+    @GetMapping("/{id}/issues")
+    public List<Issue> findAllIssues(@PathVariable String id){
+        Project project = findOne(id);
+        return project.getIssues();
+    }
+
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
     public Project create(@Valid @RequestBody Project project) {
         Project savedProject = projectRepository.save(new Project(project.getName(),project.getWebUrl(),project.getCommits(),project.getIssues()));
-      //  savedProject.setCommits(project.getCommits());
-      //  savedProject.setIssues(project.getIssues());
+        for (Commit commit : project.getCommits()) {
+            commitRepository.save(new Commit(commit.getTitle(), commit.getMessage(), commit.getAuthorName(), commit.getAuthorEmail(), commit.getAuthoredDate(), commit.getWebUrl()));
+        }
+        for (Issue issue : project.getIssues()) {
+            issueRepository.save(new Issue(issue.getTitle(), issue.getDescription(), issue.getState(), issue.getCreatedAt(), issue.getUpdatedAt(), issue.getClosedAt(), issue.getLabels(), issue.getAuthor(), issue.getAssignee(), issue.getVotes(), issue.getComments()));
+            User author = issue.getAuthor();
+            userRepository.save(new User(author.getUsername(), author.getName(), author.getAvatarUrl(), author.getWebUrl()));
+            User assignee = issue.getAssignee();
+            if (assignee != null) {
+                userRepository.save(new User(assignee.getUsername(), assignee.getName(), assignee.getAvatarUrl(), assignee.getWebUrl()));
+            }
+            for (Comment comment : issue.getComments()) {
+                commentRepository.save(new Comment(comment.getBody(), comment.getAuthor(), comment.getCreatedAt(), comment.getUpdatedAt()));
+                User user = comment.getAuthor();
+                userRepository.save(new User(user.getUsername(), user.getName(), user.getAvatarUrl(), user.getWebUrl()));
+            }
+        }
         return savedProject;
     }
 
@@ -48,17 +83,24 @@ public class ProjectController {
     @PutMapping("/{id}")
     public void update(@PathVariable String id, @Valid @RequestBody Project project) {
         Optional<Project> projectData = projectRepository.findById(id);
+
         Project _project = projectData.get();
-        _project.setName(project.getName());
-        _project.setWebUrl(project.getWebUrl());
+
+        if(projectData.isPresent()) {
+            _project.setName(project.getName());
+            _project.setWebUrl(project.getWebUrl());
+        }else {
+            throw new ProjectNotFoundException();
+        }
         projectRepository.save(_project);
     }
 
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @DeleteMapping("/{id}")
     public void delete(@PathVariable String id) {
-        if(projectRepository.existsById(id)){
+        if(projectRepository.existsById(id))
             projectRepository.deleteById(id);
-        }
+        else
+            throw new ProjectNotFoundException();
     }
 }

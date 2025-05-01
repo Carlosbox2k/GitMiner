@@ -1,6 +1,7 @@
 package aiss.gitminer.controller;
 
 import aiss.gitminer.exception.IssueNotFoundException;
+import aiss.gitminer.model.Comment;
 import aiss.gitminer.model.Issue;
 import aiss.gitminer.repository.IssueRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/gitminer/issues")
@@ -19,7 +21,10 @@ public class IssueController {
 
 
     @GetMapping
-    public List<Issue> getIssues() {
+    public List<Issue> getIssues(@RequestParam(required = false) String state) {    // TODO Add Pageable, lab 8
+        if (state != null) {
+            return issueRepository.findAll().stream().filter(issue -> issue.getState().equals(state)).collect(Collectors.toList());
+        }
         return issueRepository.findAll();
     }
 
@@ -30,6 +35,12 @@ public class IssueController {
             return issue.get();
         }
         return null;
+    }
+
+    @GetMapping("/{issueId}/comments")
+    public List<Comment> getIssueComments(@PathVariable("issueId") String issueId) {
+        Issue issue = getIssue(issueId);
+        return issue.getComments();
     }
 
     @PostMapping()
