@@ -3,6 +3,7 @@ package aiss.gitminer.controller;
 import aiss.gitminer.exception.ProjectNotFoundException;
 import aiss.gitminer.model.*;
 import aiss.gitminer.repository.*;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.HttpStatus;
@@ -10,6 +11,7 @@ import javax.validation.Valid;
 import java.util.List;
 import java.util.Optional;
 
+@Tag(name = "GitMiner Project", description = "GitMiner Project management API")
 @RestController
 @RequestMapping("/gitminer/projects")
 public class ProjectController {
@@ -78,6 +80,17 @@ public class ProjectController {
         }
 
         return savedProject;
+    }
+
+    @PostMapping("/{id}/issues")
+    @ResponseStatus(HttpStatus.CREATED)
+    public Issue createIssue(@PathVariable String id, @Valid @RequestBody Issue issue){
+        Issue _issue = issueRepository
+                .save(new Issue(issue.getId(), issue.getTitle(), issue.getDescription(), issue.getState(), issue.getCreatedAt(),
+                        issue.getUpdatedAt(), issue.getClosedAt(), issue.getLabels(), issue.getAuthor(), issue.getAssignee(),
+                        issue.getVotes(), issue.getComments()
+                ));
+        return _issue;
     }
 
     @ResponseStatus(HttpStatus.NO_CONTENT)
