@@ -1,8 +1,15 @@
 package aiss.gitminer.controller;
 
+import aiss.gitminer.exception.CommitNotFoundException;
+import aiss.gitminer.exception.IssueNotFoundException;
 import aiss.gitminer.exception.ProjectNotFoundException;
 import aiss.gitminer.model.*;
 import aiss.gitminer.repository.*;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -31,87 +38,181 @@ public class ProjectController {
         this.userRepository = userRepository;
     }
 
+    @Operation(
+            summary = "Get all Projects",
+            description = "Get all Projects saved at the DB"
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200",
+                    description = "ALl Projects",
+                    content = { @Content(schema = @Schema(implementation = Project.class),
+                            mediaType = "application/json")}
+            ),
+            @ApiResponse(responseCode = "404",
+                    description="Project not found ",
+                    content = { @Content(schema = @Schema())}
+            )
+    })
+
     @GetMapping
-    public List<Project> findAll() {
-        return projectRepository.findAll();
+    public List<Project> findAll() throws ProjectNotFoundException {
+        List<Project> projects = projectRepository.findAll();
+        if (projects.isEmpty())
+            throw new ProjectNotFoundException();
+        return projects;
     }
 
-    @GetMapping("/{id}")
-    public Project findOne(@PathVariable String id) {
+    @Operation(
+            summary = "Get a Project by Id",
+            description = "Get a Project by specifying its Id"
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200",
+                    description = "Project with Id",
+                    content = { @Content(schema = @Schema(implementation = Project.class),
+                            mediaType = "application/json")}
+            ),
+            @ApiResponse(responseCode = "404",
+                    description="Project not found",
+                    content = { @Content(schema = @Schema())}
+            )
+    })
+
+    @GetMapping("/{projectId}")
+    public Project findById(@PathVariable("projectId") String id) throws ProjectNotFoundException {
         Optional<Project> project = projectRepository.findById(id);
-        if(!project.isPresent()){
+        if(!project.isPresent())
             throw new ProjectNotFoundException();
-        }
         return project.get();
     }
 
-    @GetMapping("/{id}/commits")
-    public List<Commit> findAllCommits(@PathVariable String id)  {
-        Project project = findOne(id);
-        return project.getCommits();
+    @Operation(
+            summary = "Get all commits of a project",
+            description = "Get a list of commits of a project")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200",
+                    description = "List of commits of a project",
+                    content = { @Content(schema = @Schema(implementation = Comment.class),
+                    mediaType = "application/json")}
+            ),
+            @ApiResponse(responseCode = "404",
+                    description="Commits not found",
+                    content = { @Content(schema = @Schema())}
+            )
+    })
+
+    @GetMapping("/{projectId}/commits")
+    public List<Commit> findAllCommits(@PathVariable("projectId") String id) throws CommitNotFoundException {
+        Project project = findById(id);
+        List<Commit> commits = project.getCommits();
+        if (commits.isEmpty())
+            throw new CommitNotFoundException();
+        return commits;
+     }
+
+    @Operation(
+            summary = "Get all Issues of a Project",
+            description = "Get a list of Issues of a Project")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200",
+                    description = "List of Issues of a Project",
+                    content = { @Content(schema = @Schema(implementation = Comment.class),
+                    mediaType = "application/json")}
+            ),
+            @ApiResponse(responseCode = "404",
+                    description="Issues not found",
+                    content = { @Content(schema = @Schema())}
+            )
+    })
+
+    @GetMapping("/{projectId}/issues")
+    public List<Issue> findAllIssues(@PathVariable("projectId") String id) throws IssueNotFoundException {
+        Project project = findById(id);
+        List<Issue> issues = project.getIssues();
+        if (issues.isEmpty())
+            throw new IssueNotFoundException();
+        return issues;
     }
 
-    @GetMapping("/{id}/issues")
-    public List<Issue> findAllIssues(@PathVariable String id){
-        Project project = findOne(id);
-        return project.getIssues();
-    }
+    @Operation(
+            summary = "Create a project",
+            description = "Create a project to be saved at the DB"
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "201",
+                    description = "Project created",
+                    content = { @Content(schema = @Schema(implementation = Project.class),
+                            mediaType = "application/json")}
+            ),
+            @ApiResponse(responseCode = "400",
+                    description = "Bad Request",
+                    content = { @Content(schema = @Schema()) })
+    })
 
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
     public Project create(@Valid @RequestBody Project project) {
         Project savedProject = projectRepository.save(new Project(project.getId(), project.getName(),project.getWebUrl(), project.getCommits(), project.getIssues()));
-        for (Commit commit : project.getCommits()) {
-            commitRepository.save(new Commit(commit.getId(), commit.getTitle(), commit.getMessage(), commit.getAuthorName(), commit.getAuthorEmail(), commit.getAuthoredDate(), commit.getWebUrl()));
-        }
-        for (Issue issue : project.getIssues()) {
-            issueRepository.save(new Issue(issue.getId(),issue.getTitle(), issue.getDescription(), issue.getState(), issue.getCreatedAt(), issue.getUpdatedAt(), issue.getClosedAt(), issue.getLabels(), issue.getAuthor(), issue.getAssignee(), issue.getVotes(), issue.getComments()));
-            User author = issue.getAuthor();
-            userRepository.save(new User(author.getId(), author.getUsername(), author.getName(), author.getAvatarUrl(), author.getWebUrl()));
-            User assignee = issue.getAssignee();
-            if (assignee != null) {
-                userRepository.save(new User(assignee.getId() ,assignee.getUsername(), assignee.getName(), assignee.getAvatarUrl(), assignee.getWebUrl()));
-            }
-            for (Comment comment : issue.getComments()) {
-                commentRepository.save(new Comment(comment.getId(),comment.getBody(), comment.getAuthor(), comment.getCreatedAt(), comment.getUpdatedAt()));
-                User user = comment.getAuthor();
-                userRepository.save(new User(user.getId(), user.getUsername(), user.getName(), user.getAvatarUrl(), user.getWebUrl()));
-            }
-        }
-
         return savedProject;
     }
 
-    @PostMapping("/{id}/issues")
-    @ResponseStatus(HttpStatus.CREATED)
-    public Issue createIssue(@PathVariable String id, @Valid @RequestBody Issue issue){
-        Issue _issue = issueRepository
-                .save(new Issue(issue.getId(), issue.getTitle(), issue.getDescription(), issue.getState(), issue.getCreatedAt(),
-                        issue.getUpdatedAt(), issue.getClosedAt(), issue.getLabels(), issue.getAuthor(), issue.getAssignee(),
-                        issue.getVotes(), issue.getComments()
-                ));
-        return _issue;
-    }
+    @Operation(
+            summary = "Update a Project",
+            description = "Update a Project by specifying its Id"
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "204",
+                    description = "Project updated",
+                    content = { @Content(schema = @Schema(),
+                    mediaType = "application/json")}
+            ),
+            @ApiResponse(responseCode = "404",
+                    description="Project not found",
+                    content = { @Content(schema = @Schema())}
+            ),
+            @ApiResponse(responseCode = "400",
+                    description = "Bad Request",
+                    content = { @Content(schema = @Schema())}
+            )
+    })
 
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @PutMapping("/{id}")
-    public void update(@PathVariable String id, @Valid @RequestBody Project project) {
+    public void update(@PathVariable String id, @Valid @RequestBody Project project) throws ProjectNotFoundException {
         Optional<Project> projectData = projectRepository.findById(id);
 
-        Project _project = projectData.get();
+        Project _project;
 
         if(projectData.isPresent()) {
+            _project = projectData.get();
             _project.setName(project.getName());
             _project.setWebUrl(project.getWebUrl());
-        }else {
+            _project.setCommits(project.getCommits());
+            _project.setIssues(project.getIssues());
+        } else
             throw new ProjectNotFoundException();
-        }
         projectRepository.save(_project);
     }
 
+    @Operation(
+            summary = "Delete a Project by id",
+            description = "Delete a Project object by specifying its Id")
+    @ApiResponses({
+            @ApiResponse(responseCode = "204",
+                    description = "Project deleted",
+                    content = {@Content(schema = @Schema(),
+                    mediaType = "application/json")}
+            ),
+            @ApiResponse(responseCode = "404",
+                    description="Project not found",
+                    content = { @Content(schema = @Schema())}
+            )
+
+    })
+
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    @DeleteMapping("/{id}")
-    public void delete(@PathVariable String id) {
+    @DeleteMapping("/{projectId}")
+    public void delete(@PathVariable("projectId") String id) throws ProjectNotFoundException {
         if(projectRepository.existsById(id))
             projectRepository.deleteById(id);
         else

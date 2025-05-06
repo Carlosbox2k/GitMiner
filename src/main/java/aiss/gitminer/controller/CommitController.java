@@ -1,18 +1,20 @@
 package aiss.gitminer.controller;
 
-import aiss.gitminer.exception.CommentNotFoundException;
 import aiss.gitminer.exception.CommitNotFoundException;
 import aiss.gitminer.model.Commit;
 import aiss.gitminer.repository.CommitRepository;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import javax.validation.Valid;
 import java.util.List;
 import java.util.Optional;
 
-@Tag(name = " GitMiner Commit", description = "GitMiner Commit management API")
+@Tag(name = "GitMiner Commit", description = "GitMiner Commit management API")
 @RestController
 @RequestMapping("/gitminer/commits")
 public class CommitController {
@@ -24,54 +26,54 @@ public class CommitController {
         this.commitRepository = commitRepository;
     }
 
+    @Operation(
+            summary = "Get all Commits",
+            description = "Get a list of Commits"
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200",
+                    description = "List of Commits",
+                    content = { @Content(schema = @Schema(implementation = Commit.class),
+                    mediaType = "application/json")}
+            ),
+            @ApiResponse(responseCode = "404",
+                    description = "Commits not found",
+                    content = { @Content(schema = @Schema())}
+            )
+    })
+
     @GetMapping()
-    public List<Commit> findAll() {
-        return commitRepository.findAll();
+    public List<Commit> findAll() throws CommitNotFoundException {
+        List<Commit> commits = commitRepository.findAll();
+        if (commits.isEmpty()) {
+            throw new CommitNotFoundException();
+        }
+        return commits;
     }
 
-    @GetMapping("/{commit_id}")
-    public Commit findById(@PathVariable String commit_id) throws CommitNotFoundException {
-        Optional<Commit> commit = commitRepository.findById(commit_id);
+    @Operation(
+            summary = "Get a Commit by Id",
+            description = "Get a Commit by specifying its Id"
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200",
+                    description = "Commit with id",
+                    content = { @Content(schema = @Schema(implementation = Commit.class),
+                    mediaType = "application/json")}
+            ),
+            @ApiResponse(responseCode = "404",
+                    description = "Commit not found",
+                    content = { @Content(schema = @Schema())}
+            )
+    })
+
+    @GetMapping("/{commitId}")
+    public Commit findById(@PathVariable("commitId") String id) throws CommitNotFoundException {
+        Optional<Commit> commit = commitRepository.findById(id);
 
         if (!commit.isPresent())
             throw new CommitNotFoundException();
 
         return commit.get();
-    }
-
-    @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
-    public Commit create(@RequestBody @Valid Commit commit) {
-        Commit _commit = commitRepository.save(new Commit(commit.getId(), commit.getTitle(), commit.getMessage(),
-                commit.getAuthorName(), commit.getAuthorEmail(), commit.getAuthoredDate(), commit.getWebUrl()));
-        return _commit;
-    }
-
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    @PutMapping("/{commit_id}")
-    public void update(@PathVariable String id, @RequestBody Commit updatedCommit) {
-        Optional<Commit>  commitData = commitRepository.findById(id);
-        Commit _commit = commitData.get();
-
-        if (commitData.isPresent()) {
-            _commit = commitData.get();
-            _commit.setTitle(updatedCommit.getTitle());
-            _commit.setMessage(updatedCommit.getMessage());
-            _commit.setAuthorName(updatedCommit.getAuthorName());
-            _commit.setAuthorEmail(updatedCommit.getAuthorEmail());
-            _commit.setAuthoredDate(updatedCommit.getAuthoredDate());
-        } else
-            throw new CommitNotFoundException();
-
-        commitRepository.save(_commit);
-    }
-
-    @DeleteMapping("/{commit_id}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void delete(@PathVariable String commit_id) throws CommitNotFoundException {
-        if (commitRepository.existsById(commit_id))
-            commitRepository.deleteById(commit_id);
-        else
-            throw new CommitNotFoundException();
     }
 }
