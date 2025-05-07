@@ -12,8 +12,11 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.client.RestTemplate;
 import javax.validation.Valid;
 import java.util.List;
 import java.util.Optional;
@@ -23,24 +26,31 @@ import java.util.Optional;
 @RequestMapping("/gitminer/projects")
 public class ProjectController {
 
+    private RestTemplate restTemplate;
     private ProjectRepository projectRepository;
+    /*
     private CommitRepository commitRepository;
     private IssueRepository issueRepository;
     private CommentRepository commentRepository;
     private UserRepository userRepository;
+    */
 
+    // CommitRepository commitRepository, IssueRepository issueRepository, CommentRepository commentRepository, UserRepository userRepository
     @Autowired
-    public ProjectController(ProjectRepository projectRepository, CommitRepository commitRepository, IssueRepository issueRepository, CommentRepository commentRepository, UserRepository userRepository) {
-        this.projectRepository=projectRepository;
+    public ProjectController(RestTemplate restTemplate, ProjectRepository projectRepository) {
+        this.restTemplate = restTemplate;
+        this.projectRepository = projectRepository;
+        /*
         this.commitRepository = commitRepository;
         this.issueRepository = issueRepository;
         this.commentRepository = commentRepository;
         this.userRepository = userRepository;
+         */
     }
 
     @Operation(
-            summary = "Get all Projects",
-            description = "Get all Projects saved at the DB"
+            summary = "Get all projects",
+            description = "Get all projects saved at the DB"
     )
     @ApiResponses({
             @ApiResponse(responseCode = "200",
@@ -63,8 +73,8 @@ public class ProjectController {
     }
 
     @Operation(
-            summary = "Get a Project by Id",
-            description = "Get a Project by specifying its Id"
+            summary = "Get a project by Id",
+            description = "Get a project by specifying its Id"
     )
     @ApiResponses({
             @ApiResponse(responseCode = "200",
@@ -111,8 +121,8 @@ public class ProjectController {
      }
 
     @Operation(
-            summary = "Get all Issues of a Project",
-            description = "Get a list of Issues of a Project")
+            summary = "Get all issues of a project",
+            description = "Get a list of issues of a project")
     @ApiResponses({
             @ApiResponse(responseCode = "200",
                     description = "List of Issues of a Project",
@@ -157,8 +167,8 @@ public class ProjectController {
     }
 
     @Operation(
-            summary = "Update a Project",
-            description = "Update a Project by specifying its Id"
+            summary = "Update a project",
+            description = "Update a project by specifying its Id"
     )
     @ApiResponses({
             @ApiResponse(responseCode = "204",
@@ -177,8 +187,8 @@ public class ProjectController {
     })
 
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    @PutMapping("/{id}")
-    public void update(@PathVariable String id, @Valid @RequestBody Project project) throws ProjectNotFoundException {
+    @PutMapping("/{projectId}")
+    public void update(@PathVariable("projectId") String id, @Valid @RequestBody Project project) throws ProjectNotFoundException {
         Optional<Project> projectData = projectRepository.findById(id);
 
         Project _project;
@@ -195,8 +205,58 @@ public class ProjectController {
     }
 
     @Operation(
-            summary = "Delete a Project by id",
-            description = "Delete a Project object by specifying its Id")
+            summary = "Update a BitBucket project",
+            description = "Update a BitBucket project by specifying its workspace and repo slug"
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "204",
+                    description = "Project updated",
+                    content = { @Content(schema = @Schema(),
+                            mediaType = "application/json")}
+            ),
+            @ApiResponse(responseCode = "404",
+                    description="Project not found",
+                    content = { @Content(schema = @Schema())}
+            )
+    })
+
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PutMapping("/bitbucket/{workspace}/{repoSlug}")
+    public void updateBitBucket(@PathVariable String workspace, @PathVariable String repoSlug) throws ProjectNotFoundException {
+        String uri = "http://localhost:8081/bitbucket" + workspace + "/" + repoSlug;
+        ResponseEntity<Project> responseEntity = restTemplate.exchange(uri, HttpMethod.GET, null, Project.class);
+        Project project = responseEntity.getBody();
+        update(project.id, project);
+    }
+
+    @Operation(
+            summary = "Update a GitHub project",
+            description = "Update a GitHub project by specifying its owner and repo"
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "204",
+                    description = "Project updated",
+                    content = { @Content(schema = @Schema(),
+                            mediaType = "application/json")}
+            ),
+            @ApiResponse(responseCode = "404",
+                    description="Project not found",
+                    content = { @Content(schema = @Schema())}
+            )
+    })
+
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PutMapping("/github/{owner}/{repo}")
+    public void updateGitHub(@PathVariable String owner, @PathVariable String repo) throws ProjectNotFoundException {
+        String uri = "http://localhost:8082/github/" + owner + "/" + repo;
+        ResponseEntity<Project> response = restTemplate.exchange(uri, HttpMethod.GET , null,Project.class);
+        Project project = response.getBody();
+        update(project.id, project);
+    }
+
+    @Operation(
+            summary = "Delete a project by id",
+            description = "Delete a project object by specifying its Id")
     @ApiResponses({
             @ApiResponse(responseCode = "204",
                     description = "Project deleted",
@@ -207,7 +267,6 @@ public class ProjectController {
                     description="Project not found",
                     content = { @Content(schema = @Schema())}
             )
-
     })
 
     @ResponseStatus(HttpStatus.NO_CONTENT)
