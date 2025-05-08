@@ -226,7 +226,7 @@ public class ProjectController {
                                 @RequestParam(defaultValue = "5")String nCommits,
                                 @RequestParam(defaultValue = "5")String nIssues,
                                 @RequestParam(defaultValue = "2")String maxPages) throws ProjectNotFoundException {
-        String uri = "http://localhost:8081/bitbucket" + workspace + "/" + repoSlug + "?nCommits=" + nCommits + "&nIssues=" + nIssues + "&maxPages=" + maxPages;
+        String uri = "http://localhost:8081/bitbucket/" + workspace + "/" + repoSlug + "?nCommits=" + nCommits + "&nIssues=" + nIssues + "&maxPages=" + maxPages;
         ResponseEntity<Project> responseEntity = restTemplate.exchange(uri, HttpMethod.GET, null, Project.class);
         Project project = responseEntity.getBody();
         update(project.id, project);
