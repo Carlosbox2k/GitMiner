@@ -222,8 +222,11 @@ public class ProjectController {
 
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @PutMapping("/bitbucket/{workspace}/{repoSlug}")
-    public void updateBitBucket(@PathVariable String workspace, @PathVariable String repoSlug) throws ProjectNotFoundException {
-        String uri = "http://localhost:8081/bitbucket" + workspace + "/" + repoSlug;
+    public void updateBitBucket(@PathVariable String workspace, @PathVariable String repoSlug,
+                                @RequestParam(defaultValue = "5")String nCommits,
+                                @RequestParam(defaultValue = "5")String nIssues,
+                                @RequestParam(defaultValue = "2")String maxPages) throws ProjectNotFoundException {
+        String uri = "http://localhost:8081/bitbucket" + workspace + "/" + repoSlug + "?nCommits=" + nCommits + "&nIssues=" + nIssues + "&maxPages=" + maxPages;
         ResponseEntity<Project> responseEntity = restTemplate.exchange(uri, HttpMethod.GET, null, Project.class);
         Project project = responseEntity.getBody();
         update(project.id, project);
@@ -247,8 +250,11 @@ public class ProjectController {
 
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @PutMapping("/github/{owner}/{repo}")
-    public void updateGitHub(@PathVariable String owner, @PathVariable String repo) throws ProjectNotFoundException {
-        String uri = "http://localhost:8082/github/" + owner + "/" + repo;
+    public void updateGitHub(@PathVariable String owner, @PathVariable String repo,
+                             @RequestParam(defaultValue="2")String sinceCommits,
+                             @RequestParam(defaultValue="20") String sinceIssues,
+                             @RequestParam(defaultValue="2")String maxPages) throws ProjectNotFoundException {
+        String uri = "http://localhost:8082/github/" + owner + "/" + repo + "?sinceCommits=" + sinceCommits + "&sinceIssues=" + sinceIssues + "&maxPages=" + maxPages;
         ResponseEntity<Project> response = restTemplate.exchange(uri, HttpMethod.GET , null,Project.class);
         Project project = response.getBody();
         update(project.id, project);
