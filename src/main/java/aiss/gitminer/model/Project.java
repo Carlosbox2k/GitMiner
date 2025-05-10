@@ -40,8 +40,6 @@ public class Project {
         this.id = id;
         this.name = name;
         this.webUrl = webUrl;
-        // this.commits = new ArrayList<>();
-        // this.issues = new ArrayList<>();
         this.commits = commits;
         this.issues = issues;
     }

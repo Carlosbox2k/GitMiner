@@ -44,19 +44,6 @@ public class Commit {
         this.webUrl = webUrl;
     }
 
-    /*
-    @JsonProperty("committer_name")
-    @NotEmpty(message = "Committer name cannot be empty.")
-    private String committerName;
-    @JsonProperty("committer_email")
-    private String committerEmail;
-
-    @JsonProperty("committed_date")
-    @NotEmpty(message = "Committer date cannot be empty.")
-    private String committedDate;
-
-     */
-
     public String getId() {
         return id;
     }
@@ -113,33 +100,6 @@ public class Commit {
         this.webUrl = webUrl;
     }
 
-    /*
-    public String getCommitterName() {
-        return committerName;
-    }
-
-    public void setCommitterName(String committerName) {
-        this.committerName = committerName;
-    }
-
-    public String getCommitterEmail() {
-        return committerEmail;
-    }
-
-    public void setCommitterEmail(String committerEmail) {
-        this.committerEmail = committerEmail;
-    }
-
-    public String getCommittedDate() {
-        return committedDate;
-    }
-
-    public void setCommittedDate(String committedDate) {
-        this.committedDate = committedDate;
-    }
-
-     */
-
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
@@ -172,21 +132,6 @@ public class Commit {
         sb.append('=');
         sb.append(((this.webUrl == null) ? "<null>" : this.webUrl));
         sb.append(',');
-        /*
-        sb.append("committerName");
-        sb.append('=');
-        sb.append(((this.committerName == null) ? "<null>" : this.committerName));
-        sb.append(',');
-        sb.append("committerEmail");
-        sb.append('=');
-        sb.append(((this.committerEmail == null) ? "<null>" : this.committerEmail));
-        sb.append(',');
-        sb.append("committedDate");
-        sb.append('=');
-        sb.append(((this.committedDate == null) ? "<null>" : this.committedDate));
-        sb.append(',');
-
-         */
         if (sb.charAt((sb.length() - 1)) == ',') {
             sb.setCharAt((sb.length() - 1), ']');
         } else {

@@ -61,22 +61,8 @@ public class Issue {
         this.author = author;
         this.assignee = assignee;
         this.votes = votes;
-        // this.comments = new ArrayList<>();
         this.comments = comments;
     }
-
-    /*
-    @JsonProperty("ref_id")
-    private String refId;
-    @JsonProperty("upvotes")
-    private Integer upvotes;
-    @JsonProperty("downvotes")
-    private Integer downvotes;
-    @JsonProperty("web_url")
-    private String webUrl;
-
-     */
-
 
     public String getId() {
         return id;
@@ -174,41 +160,6 @@ public class Issue {
         this.comments = comments;
     }
 
-    /*
-    public String getRefId() {
-        return refId;
-    }
-
-    public void setRefId(String refId) {
-        this.refId = refId;
-    }
-
-    public Integer getUpvotes() {
-        return upvotes;
-    }
-
-    public void setUpvotes(Integer upvotes) {
-        this.upvotes = upvotes;
-    }
-
-    public Integer getDownvotes() {
-        return downvotes;
-    }
-
-    public void setDownvotes(Integer downvotes) {
-        this.downvotes = downvotes;
-    }
-
-    public String getWebUrl() {
-        return webUrl;
-    }
-
-    public void setWebUrl(String webUrl) {
-        this.webUrl = webUrl;
-    }
-
-     */
-
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
@@ -261,25 +212,6 @@ public class Issue {
         sb.append('=');
         sb.append(((this.comments == null) ? "<null>" : this.comments));
         sb.append(',');
-        /*
-        sb.append("refId");
-        sb.append('=');
-        sb.append(((this.refId == null) ? "<null>" : this.refId));
-        sb.append(',');
-        sb.append("upvotes");
-        sb.append('=');
-        sb.append(((this.upvotes == null) ? "<null>" : this.upvotes));
-        sb.append(',');
-        sb.append("downvotes");
-        sb.append('=');
-        sb.append(((this.downvotes == null) ? "<null>" : this.downvotes));
-        sb.append(',');
-        sb.append("web_url");
-        sb.append('=');
-        sb.append(((this.web_url == null) ? "<null>" : this.web_url));
-        sb.append(',');
-
-         */
         if (sb.charAt((sb.length() - 1)) == ',') {
             sb.setCharAt((sb.length() - 1), ']');
         } else {
