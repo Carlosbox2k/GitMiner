@@ -28,24 +28,11 @@ public class ProjectController {
 
     private RestTemplate restTemplate;
     private ProjectRepository projectRepository;
-    /*
-    private CommitRepository commitRepository;
-    private IssueRepository issueRepository;
-    private CommentRepository commentRepository;
-    private UserRepository userRepository;
-    */
 
-    // CommitRepository commitRepository, IssueRepository issueRepository, CommentRepository commentRepository, UserRepository userRepository
     @Autowired
     public ProjectController(RestTemplate restTemplate, ProjectRepository projectRepository) {
         this.restTemplate = restTemplate;
         this.projectRepository = projectRepository;
-        /*
-        this.commitRepository = commitRepository;
-        this.issueRepository = issueRepository;
-        this.commentRepository = commentRepository;
-        this.userRepository = userRepository;
-         */
     }
 
     @Operation(
@@ -103,7 +90,7 @@ public class ProjectController {
             @ApiResponse(responseCode = "200",
                     description = "List of commits of a project",
                     content = { @Content(schema = @Schema(implementation = Comment.class),
-                    mediaType = "application/json")}
+                            mediaType = "application/json")}
             ),
             @ApiResponse(responseCode = "404",
                     description="Commits not found",
@@ -118,7 +105,7 @@ public class ProjectController {
         if (commits.isEmpty())
             throw new CommitNotFoundException();
         return commits;
-     }
+    }
 
     @Operation(
             summary = "Get all issues of a project",
@@ -127,7 +114,7 @@ public class ProjectController {
             @ApiResponse(responseCode = "200",
                     description = "List of Issues of a Project",
                     content = { @Content(schema = @Schema(implementation = Comment.class),
-                    mediaType = "application/json")}
+                            mediaType = "application/json")}
             ),
             @ApiResponse(responseCode = "404",
                     description="Issues not found",
@@ -174,7 +161,7 @@ public class ProjectController {
             @ApiResponse(responseCode = "204",
                     description = "Project updated",
                     content = { @Content(schema = @Schema(),
-                    mediaType = "application/json")}
+                            mediaType = "application/json")}
             ),
             @ApiResponse(responseCode = "404",
                     description="Project not found",
@@ -190,11 +177,12 @@ public class ProjectController {
     @PutMapping("/{projectId}")
     public void update(@PathVariable("projectId") String id, @Valid @RequestBody Project project) throws ProjectNotFoundException {
         Optional<Project> projectData = projectRepository.findById(id);
-
         Project _project;
-
         if(projectData.isPresent()) {
             _project = projectData.get();
+
+            delete(_project.getId());
+
             _project.setName(project.getName());
             _project.setWebUrl(project.getWebUrl());
             _project.setCommits(project.getCommits());
@@ -267,7 +255,7 @@ public class ProjectController {
             @ApiResponse(responseCode = "204",
                     description = "Project deleted",
                     content = {@Content(schema = @Schema(),
-                    mediaType = "application/json")}
+                            mediaType = "application/json")}
             ),
             @ApiResponse(responseCode = "404",
                     description="Project not found",
